@@ -5,9 +5,11 @@
 const express = require("express");
 const router = express.Router();
 
+const { createUser, loginUser, renewToken } = require("../controllers/auth");
+
 // Routes
-router.get("/", (req, res) => {
-  res.send("Auth routes");
-});
+router.post("/", loginUser);
+router.post("/new", createUser);
+router.get("/renew", renewToken);
 
 module.exports = router;
