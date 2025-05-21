@@ -1,1 +1,19 @@
-console.log("Hello World!!!");
+const express = require("express");
+require("dotenv").config();
+
+// create express app
+const app = express();
+
+// Public folder
+app.use(express.static("public"));
+
+// Routes
+// TODO: Auth routes: Create, login, logout, check auth status
+app.use("/api/auth", require("./routes/auth"));
+
+// TODO: API CRUD Events routes: Get events, create event, update event, delete event
+
+// start the server on port 3000
+app.listen(process.env.PORT, () => {
+  console.log(`Server is running on port ${process.env.PORT}`);
+});
