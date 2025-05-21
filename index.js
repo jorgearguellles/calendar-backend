@@ -7,6 +7,9 @@ const app = express();
 // Public folder
 app.use(express.static("public"));
 
+// Body parser
+app.use(express.json());
+
 // Routes
 // TODO: Auth routes: Create, login, logout, check auth status
 app.use("/api/auth", require("./routes/auth"));

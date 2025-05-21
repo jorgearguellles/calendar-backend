@@ -1,23 +1,48 @@
 const { response } = require("express");
-
+const { validationResult } = require("express-validator");
 const createUser = (req, res = response) => {
-  res.json({
+  const { name, email, password } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      ok: false,
+      errors: errors.mapped(),
+    });
+  }
+
+  res.status(201).json({
     ok: true,
-    msg: "New user",
+    msg: "User created",
+    name,
+    email,
+    password,
   });
 };
 
 const loginUser = (req, res = response) => {
-  res.json({
+  const { email, password } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      ok: false,
+      errors: errors.mapped(),
+    });
+  }
+
+  res.status(200).json({
     ok: true,
-    msg: "Login user",
+    msg: "User logged in",
+    email,
+    password,
   });
 };
 
 const renewToken = (req, res = response) => {
-  res.json({
+  res.status(200).json({
     ok: true,
-    msg: "Renew token",
+    msg: "Token renewed",
   });
 };
 
