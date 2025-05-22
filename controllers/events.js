@@ -1,31 +1,100 @@
 const { response } = require("express");
+const Event = require("../models/Event");
 
-const getEvents = (req, res = response) => {
-  res.json({
+const getEvents = async (req, res = response) => {
+  const events = await Event.find().populate("user", "name");
+
+  res.status(200).json({
     ok: true,
-    msg: "Get events",
+    events,
   });
 };
 
-const createEvent = (req, res = response) => {
-  res.json({
+const createEvent = async (req, res = response) => {
+  const event = new Event(req.body);
+  await event.save();
+
+  res.status(201).json({
     ok: true,
-    msg: "Create event",
+    event,
   });
 };
 
-const updateEvent = (req, res = response) => {
-  res.json({
-    ok: true,
-    msg: "Update event by id",
-  });
+const updateEvent = async (req, res = response) => {
+  const { id } = req.params;
+  const { uid } = req;
+
+  try {
+    const event = await Event.findById(id);
+    if (!event) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Event not found",
+      });
+    }
+
+    if (event.user.toString() !== uid) {
+      return res.status(401).json({
+        ok: false,
+        msg: "You are not allowed to update this event",
+      });
+    }
+
+    const newEvent = {
+      ...req.body,
+      user: uid,
+    };
+
+    const updatedEvent = await Event.findByIdAndUpdate(id, newEvent, {
+      new: true,
+    });
+
+    res.status(200).json({
+      ok: true,
+      event: updatedEvent,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error updating event",
+    });
+  }
 };
 
-const deleteEvent = (req, res = response) => {
-  res.json({
-    ok: true,
-    msg: "Delete event by id",
-  });
+const deleteEvent = async (req, res = response) => {
+  const { id } = req.params;
+  const { uid } = req;
+
+  try {
+    const event = await Event.findById(id);
+    if (!event) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Event not found",
+      });
+    }
+
+    if (event.user.toString() !== uid) {
+      return res.status(401).json({
+        ok: false,
+        msg: "You are not allowed to delete this event",
+      });
+    }
+
+    await Event.findByIdAndDelete(id);
+
+    res.status(200).json({
+      ok: true,
+      msg: "Event deleted",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error deleting event",
+    });
+  }
 };
 
 module.exports = {
