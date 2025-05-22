@@ -19,10 +19,8 @@ app.use(express.static("public"));
 app.use(express.json());
 
 // Routes
-// TODO: Auth routes: Create, login, logout, check auth status
 app.use("/api/auth", require("./routes/auth"));
-
-// TODO: API CRUD Events routes: Get events, create event, update event, delete event
+app.use("/api/events", require("./routes/events"));
 
 // start the server on port 3000
 app.listen(process.env.PORT, () => {
