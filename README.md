@@ -116,7 +116,7 @@ calendar-backend/
 1. Clonar el repositorio
 
 ```bash
-git clone [url-del-repositorio]
+git clone git@github.com:jorgearguellles/calendar-backend.git
 ```
 
 2. Instalar dependencias
