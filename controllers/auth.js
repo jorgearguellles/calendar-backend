@@ -1,7 +1,7 @@
 const { response } = require("express");
 const bcrypt = require("bcryptjs");
 const User = require("../models/users");
-
+const { generateJWT } = require("../helpers/jwt");
 const createUser = async (req, res = response) => {
   const { email, password } = req.body;
 
@@ -23,11 +23,15 @@ const createUser = async (req, res = response) => {
 
     await user.save();
 
+    // Generar un JWT
+    const token = await generateJWT(user._id, user.name);
+
     res.status(201).json({
       ok: true,
       msg: "User created",
       userId: user._id,
       name: user.name,
+      token,
     });
   } catch (error) {
     console.log(error);
@@ -38,15 +42,47 @@ const createUser = async (req, res = response) => {
   }
 };
 
-const loginUser = (req, res = response) => {
+const loginUser = async (req, res = response) => {
   const { email, password } = req.body;
 
-  res.status(200).json({
-    ok: true,
-    msg: "User logged in",
-    email,
-    password,
-  });
+  try {
+    // Verificar si el usuario existe
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        ok: false,
+        msg: "El usuario no existe.",
+      });
+    }
+
+    // Verificar si la contraseña es correcta
+    const validPassword = bcrypt.compareSync(password, user.password);
+
+    if (!validPassword) {
+      return res.status(400).json({
+        ok: false,
+        msg: "La contraseña es incorrecta",
+      });
+    }
+
+    // Generar un JWT
+    const token = await generateJWT(user._id, user.name);
+
+    res.status(200).json({
+      ok: true,
+      msg: "User logged in",
+      userId: user._id,
+      name: user.name,
+      token,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al iniciar sesión",
+    });
+  }
 };
 
 const renewToken = (req, res = response) => {
