@@ -12,12 +12,21 @@ const getEvents = async (req, res = response) => {
 
 const createEvent = async (req, res = response) => {
   const event = new Event(req.body);
-  await event.save();
 
-  res.status(201).json({
-    ok: true,
-    event,
-  });
+  try {
+    const savedEvent = await event.save();
+
+    res.status(201).json({
+      ok: true,
+      event: savedEvent,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error creating event",
+    });
+  }
 };
 
 const updateEvent = async (req, res = response) => {
