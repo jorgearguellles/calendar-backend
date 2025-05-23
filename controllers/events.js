@@ -52,7 +52,7 @@ const updateEvent = async (req, res = response) => {
       });
     }
 
-    if (event.user.toString() !== userId) {
+    if (event?.user?.toString() !== userId) {
       return res.status(401).json({
         ok: false,
         msg: "You are not allowed to update this event",
@@ -94,7 +94,7 @@ const deleteEvent = async (req, res = response) => {
       });
     }
 
-    if (event.user.toString() !== userId) {
+    if (event?.user?.toString() !== userId) {
       return res.status(401).json({
         ok: false,
         msg: "You are not allowed to delete this event",
