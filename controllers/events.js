@@ -2,18 +2,27 @@ const { response } = require("express");
 const Event = require("../models/Event");
 
 const getEvents = async (req, res = response) => {
-  const events = await Event.find().populate("user", "name");
+  try {
+    const events = await Event.find().populate("user", "name");
 
-  res.status(200).json({
-    ok: true,
-    events,
-  });
+    res.status(200).json({
+      ok: true,
+      events,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error getting events",
+    });
+  }
 };
 
 const createEvent = async (req, res = response) => {
   const event = new Event(req.body);
 
   try {
+    event.user = req.uid;
     const savedEvent = await event.save();
 
     res.status(201).json({
@@ -30,11 +39,12 @@ const createEvent = async (req, res = response) => {
 };
 
 const updateEvent = async (req, res = response) => {
-  const { id } = req.params;
-  const { uid } = req;
+  const eventId = req.params.id;
+  const userId = req.uid;
 
   try {
-    const event = await Event.findById(id);
+    const event = await Event.findById(eventId);
+
     if (!event) {
       return res.status(404).json({
         ok: false,
@@ -42,7 +52,7 @@ const updateEvent = async (req, res = response) => {
       });
     }
 
-    if (event.user.toString() !== uid) {
+    if (event.user.toString() !== userId) {
       return res.status(401).json({
         ok: false,
         msg: "You are not allowed to update this event",
@@ -51,10 +61,10 @@ const updateEvent = async (req, res = response) => {
 
     const newEvent = {
       ...req.body,
-      user: uid,
+      user: userId,
     };
 
-    const updatedEvent = await Event.findByIdAndUpdate(id, newEvent, {
+    const updatedEvent = await Event.findByIdAndUpdate(eventId, newEvent, {
       new: true,
     });
 
@@ -72,11 +82,11 @@ const updateEvent = async (req, res = response) => {
 };
 
 const deleteEvent = async (req, res = response) => {
-  const { id } = req.params;
-  const { uid } = req;
+  const eventId = req.params.id;
+  const userId = req.uid;
 
   try {
-    const event = await Event.findById(id);
+    const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({
         ok: false,
@@ -84,14 +94,14 @@ const deleteEvent = async (req, res = response) => {
       });
     }
 
-    if (event.user.toString() !== uid) {
+    if (event.user.toString() !== userId) {
       return res.status(401).json({
         ok: false,
         msg: "You are not allowed to delete this event",
       });
     }
 
-    await Event.findByIdAndDelete(id);
+    await Event.findByIdAndDelete(eventId);
 
     res.status(200).json({
       ok: true,
